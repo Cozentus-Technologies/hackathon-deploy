@@ -1,0 +1,58 @@
+name: Deploy to Cloud Run
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: "Cloud Run service name (must match services_data.tf in the platform repo)"
+        required: true
+        type: string
+
+permissions:
+  id-token: write   # required for Workload Identity Federation
+  contents: read
+
+env:
+  GCP_PROJECT_ID: project-4ea527b8-b20a-44d6-b81
+  GCP_REGION: asia-south1
+  AR_REPO: asia-south1-docker.pkg.dev/project-4ea527b8-b20a-44d6-b81/hackathon
+  WORKLOAD_IDENTITY_PROVIDER: "projects/190206654654/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+  DEPLOYER_SA: hackathon-deployer@project-4ea527b8-b20a-44d6-b81.iam.gserviceaccount.com
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.DEPLOYER_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        id: build
+        run: |
+          IMAGE="${{ env.AR_REPO }}/${{ inputs.service_name }}:${{ github.sha }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ inputs.service_name }}
+          region: ${{ env.GCP_REGION }}
+          image: ${{ steps.build.outputs.image }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Show URLs
+        run: |
+          echo "Custom domain: https://${{ inputs.service_name }}.hackathon.cozentus.com"
+          echo "Direct Cloud Run URL: check the deploy step output above"
