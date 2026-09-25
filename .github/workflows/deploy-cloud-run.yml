@@ -4,9 +4,19 @@ on:
   workflow_call:
     inputs:
       service_name:
-        description: "Cloud Run service name (must match services_data.tf in the platform repo)"
+        description: "Cloud Run service name (must match services_data.tf / worker_services.tf in the platform repo)"
         required: true
         type: string
+      dockerfile:
+        description: "Path to the Dockerfile to build, if not the repo-root Dockerfile (e.g. a worker variant)"
+        required: false
+        type: string
+        default: "Dockerfile"
+      secrets_mapping:
+        description: "Optional comma-separated ENV_VAR=secret-name:latest pairs, e.g. DATABASE_URL=eternal-host-be-db-url:latest. Ask DevOps to create the secret first."
+        required: false
+        type: string
+        default: ""
 
 permissions:
   id-token: write   # required for Workload Identity Federation
@@ -40,7 +50,7 @@ jobs:
         id: build
         run: |
           IMAGE="${{ env.AR_REPO }}/${{ inputs.service_name }}:${{ github.sha }}"
-          docker build -t "$IMAGE" .
+          docker build -f "${{ inputs.dockerfile }}" -t "$IMAGE" .
           docker push "$IMAGE"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
@@ -51,6 +61,7 @@ jobs:
           region: ${{ env.GCP_REGION }}
           image: ${{ steps.build.outputs.image }}
           project_id: ${{ env.GCP_PROJECT_ID }}
+          secrets: ${{ inputs.secrets_mapping }}
 
       - name: Show URLs
         run: |
