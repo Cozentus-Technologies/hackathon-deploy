@@ -1,0 +1,17 @@
+# ASP.NET Core API/web app.
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+# Replace with your actual .csproj path if not in the repo root.
+RUN dotnet publish -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app .
+
+ENV PORT=8080
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+# Replace with your actual built DLL name.
+ENTRYPOINT ["dotnet", "YourApp.dll"]
