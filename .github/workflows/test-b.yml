@@ -1,0 +1,10 @@
+name: Test B - id-token only
+on:
+  workflow_call:
+permissions:
+  id-token: write
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "test-b"
