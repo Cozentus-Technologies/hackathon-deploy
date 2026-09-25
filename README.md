@@ -58,8 +58,31 @@ This repo holds the shared CI/CD pipeline. You don't need any GCP access — eve
 
 Until GoDaddy DNS is configured (DevOps handles this), your app is still reachable at the direct `*.run.app` URL shown in your deploy's Action log.
 
+## Secrets (API keys, DB credentials, etc.)
+
+You don't have GCP access, so you can't create these yourself. Tell DevOps what you need (env var name + value, sent privately, not in a group chat) and we'll create it in Secret Manager and wire it into your service. It shows up as a normal environment variable in your app — nothing to change in your code.
+
+## eternal-host-worker (Celery background worker)
+
+This is already provisioned as a dedicated **always-on** Cloud Run service (`eternal-host-worker`) — it does not scale to zero and is not reachable from the internet, it just keeps running your Celery worker process. To deploy it:
+
+1. Add a second Dockerfile to `eternal_host_be`, e.g. `Dockerfile.worker`, with `CMD` running `celery -A myproject worker` instead of gunicorn (no `$PORT`/web server needed here).
+2. Add a second caller workflow, e.g. `.github/workflows/deploy-worker.yml`:
+   ```yaml
+   name: Deploy Worker
+   on:
+     push:
+       branches: [main]
+     workflow_dispatch: {}
+   jobs:
+     deploy:
+       uses: Cozentus-Technologies/hackathon-deploy/.github/workflows/deploy-cloud-run.yml@main
+       with:
+         service_name: eternal-host-worker
+         dockerfile: Dockerfile.worker
+   ```
+
 ## Notes
 
-- **eternal-host-be**: if you need a Celery worker, that doesn't fit this pipeline as-is (Cloud Run is request-driven) — talk to DevOps, we'll set up a dedicated always-on service for it.
-- Cold starts happen after idle periods (services scale to zero) — the first request after a quiet spell takes a couple seconds longer.
+- Cold starts happen after idle periods (web services scale to zero) — the first request after a quiet spell takes a couple seconds longer.
 - Database connectivity: DevOps is handling this separately — ping us once your app needs specific ports opened.
