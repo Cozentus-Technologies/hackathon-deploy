@@ -1,0 +1,16 @@
+# Django + Gunicorn, for API-style backends.
+# Cloud Run injects $PORT (default 8080) -- the container MUST listen on it.
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
+
+COPY . .
+
+ENV PORT=8080
+EXPOSE 8080
+
+# Replace "myproject.wsgi" with your actual <project>.wsgi module.
+CMD exec gunicorn myproject.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 0
