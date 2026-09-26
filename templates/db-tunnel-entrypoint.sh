@@ -26,8 +26,24 @@ set -e
 # refuses to use a private key that's group/world-readable -- chmod on the
 # mounted path itself fails silently (read-only filesystem). Copy it to a
 # writable location first, then lock that copy down.
+#
+# The mount also uses an atomic file-swap mechanism (to support live secret
+# rotation without a restart), which can race with a plain `cp` right at
+# container startup ("file was replaced while being copied") -- retry a few
+# times rather than failing outright on that transient error.
 RUNTIME_KEY_PATH=/tmp/db_tunnel_key
-cp "$DB_TUNNEL_SSH_KEY_PATH" "$RUNTIME_KEY_PATH"
+i=1
+while [ "$i" -le 10 ]; do
+  if cp "$DB_TUNNEL_SSH_KEY_PATH" "$RUNTIME_KEY_PATH" 2>/dev/null; then
+    break
+  fi
+  i=$((i + 1))
+  sleep 1
+done
+if [ ! -f "$RUNTIME_KEY_PATH" ]; then
+  echo "FATAL: could not copy $DB_TUNNEL_SSH_KEY_PATH after 10 attempts" >&2
+  exit 1
+fi
 chmod 600 "$RUNTIME_KEY_PATH"
 
 ssh -N \
