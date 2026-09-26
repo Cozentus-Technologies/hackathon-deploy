@@ -22,14 +22,20 @@
 
 set -e
 
-chmod 600 "$DB_TUNNEL_SSH_KEY_PATH"
+# Cloud Run mounts Secret Manager volumes read-only (mode 0444), and ssh
+# refuses to use a private key that's group/world-readable -- chmod on the
+# mounted path itself fails silently (read-only filesystem). Copy it to a
+# writable location first, then lock that copy down.
+RUNTIME_KEY_PATH=/tmp/db_tunnel_key
+cp "$DB_TUNNEL_SSH_KEY_PATH" "$RUNTIME_KEY_PATH"
+chmod 600 "$RUNTIME_KEY_PATH"
 
 ssh -N \
   -o IdentitiesOnly=yes \
   -o StrictHostKeyChecking=accept-new \
   -o ServerAliveInterval=30 \
   -o ExitOnForwardFailure=yes \
-  -i "$DB_TUNNEL_SSH_KEY_PATH" \
+  -i "$RUNTIME_KEY_PATH" \
   -L 127.0.0.1:"$DB_TUNNEL_LOCAL_PORT":"$DB_TUNNEL_REMOTE_HOST":"$DB_TUNNEL_REMOTE_PORT" \
   "$DB_TUNNEL_JUMP_USER"@"$DB_TUNNEL_JUMP_HOST" &
 
