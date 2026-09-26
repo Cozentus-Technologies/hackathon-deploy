@@ -62,6 +62,29 @@ Until GoDaddy DNS is configured (DevOps handles this), your app is still reachab
 
 You don't have GCP access, so you can't create these yourself. Tell DevOps what you need (env var name + value, sent privately, not in a group chat) and we'll create it in Secret Manager and wire it into your service. It shows up as a normal environment variable in your app — nothing to change in your code.
 
+Once created, secrets and plain (non-secret) env vars are wired in via your caller workflow:
+
+```yaml
+jobs:
+  deploy:
+    uses: Cozentus-Technologies/hackathon-deploy/.github/workflows/deploy-cloud-run.yml@main
+    with:
+      service_name: your-service-name
+      secrets_mapping: "DB_URL=your-service-db-url:latest,DB_PASSWORD=your-service-db-password:latest"
+      env_vars: "SOME_CONFIG=some-value"
+```
+
+## Database on a private network? (jump host / SSH tunnel)
+
+If your team's DB isn't directly reachable from the internet (common if it's hosted on internal infra rather than Cloud SQL), we've set up a shared pattern rather than solving this per-team: your container opens an SSH tunnel to a jump host at startup, forwards the DB port to `127.0.0.1` inside the container, and your app connects to that local address like normal.
+
+1. Tell DevOps your DB's private host/port (as reached from the jump host) and your credentials.
+2. We create your `*-db-url` / `*-db-user` / `*-db-password` secrets (`DB_URL` should point at `127.0.0.1:<local-port>`, not the real private host).
+3. Add [`templates/db-tunnel-entrypoint.sh`](./templates/db-tunnel-entrypoint.sh) to your repo, install `openssh-client` + `netcat` in your final image stage, and set it as your `ENTRYPOINT` (see the script's header comment for the required env vars, and `kinetix-api-service`'s PR for a worked example).
+4. Add `/secrets/db_tunnel_key=db-jump-host-ssh-key:latest` to your `secrets_mapping` (the shared jump-host key -- ask DevOps, don't generate your own).
+
+Note: this currently runs the container as root (simplest way to reliably read the mounted SSH key) -- fine for now, worth hardening later.
+
 ## eternal-host-worker (Celery background worker)
 
 This is already provisioned as a dedicated **always-on** Cloud Run service (`eternal-host-worker`) — it does not scale to zero and is not reachable from the internet, it just keeps running your Celery worker process. To deploy it:
