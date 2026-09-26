@@ -13,7 +13,12 @@ on:
         type: string
         default: "Dockerfile"
       secrets_mapping:
-        description: "Optional comma-separated ENV_VAR=secret-name:latest pairs, e.g. DATABASE_URL=eternal-host-be-db-url:latest. Ask DevOps to create the secret first."
+        description: "Optional comma-separated ENV_VAR=secret-name:latest (or /mount/path=secret-name:latest for a file mount) pairs. Ask DevOps to create the secret first."
+        required: false
+        type: string
+        default: ""
+      env_vars:
+        description: "Optional comma-separated KEY=VALUE pairs for plain (non-secret) environment variables, e.g. CORS origins."
         required: false
         type: string
         default: ""
@@ -55,6 +60,7 @@ jobs:
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Cloud Run
+        id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ inputs.service_name }}
@@ -62,8 +68,9 @@ jobs:
           image: ${{ steps.build.outputs.image }}
           project_id: ${{ env.GCP_PROJECT_ID }}
           secrets: ${{ inputs.secrets_mapping }}
+          env_vars: ${{ inputs.env_vars }}
 
       - name: Show URLs
         run: |
-          echo "Custom domain: https://${{ inputs.service_name }}.hackathon.cozentus.com"
-          echo "Direct Cloud Run URL: check the deploy step output above"
+          echo "Direct Cloud Run URL: ${{ steps.deploy.outputs.url }}"
+          echo "Custom domain: check with DevOps for this service's assigned subdomain (see hackathon-deploy README table)"
