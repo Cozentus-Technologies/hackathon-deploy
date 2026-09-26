@@ -36,25 +36,25 @@ This repo holds the shared CI/CD pipeline. You don't need any GCP access — eve
 
 | Repo | `service_name` | URL after first deploy |
 |---|---|---|
-| eternal_host_ui | `eternal-host-ui` | https://eternal-host-ui.hackathon.cozentus.com |
-| eternal_host_be | `eternal-host-be` | https://eternal-host-be.hackathon.cozentus.com |
-| codesmash-frontend | `codesmash-frontend` | https://codesmash-frontend.hackathon.cozentus.com |
-| codesmash-api | `codesmash-api` | https://codesmash-api.hackathon.cozentus.com |
-| hack-ims-frontend | `hack-ims-frontend` | https://hack-ims-frontend.hackathon.cozentus.com |
-| hack-ims-backend | `hack-ims-backend` | https://hack-ims-backend.hackathon.cozentus.com |
-| bitstorm-ui | `bitstorm-ui` | https://bitstorm-ui.hackathon.cozentus.com |
-| bitstorm-api | `bitstorm-api` | https://bitstorm-api.hackathon.cozentus.com |
-| kinetix-api-service | `kinetix-api-service` | https://kinetix-api-service.hackathon.cozentus.com |
-| kinetix-ui-service | `kinetix-ui-service` | https://kinetix-ui-service.hackathon.cozentus.com |
-| ai-mavericks-ui | `ai-mavericks-ui` | https://ai-mavericks-ui.hackathon.cozentus.com |
-| ai-mavericks-api | `ai-mavericks-api` | https://ai-mavericks-api.hackathon.cozentus.com |
-| patronus-global-help-desk | `patronus-global-help-desk` | https://patronus-global-help-desk.hackathon.cozentus.com |
-| patronus-ai-support-investigator | `patronus-ai-support-investigator` | https://patronus-ai-support-investigator.hackathon.cozentus.com |
-| patronus-target-application | `patronus-target-application` | https://patronus-target-application.hackathon.cozentus.com |
-| team-tesseract-backend | `team-tesseract-backend` | https://team-tesseract-backend.hackathon.cozentus.com |
-| team-tesseract-ui | `team-tesseract-ui` | https://team-tesseract-ui.hackathon.cozentus.com |
-| colorsweep-BE | `colorsweep-be` | https://colorsweep-be.hackathon.cozentus.com |
-| colorsweep-UI | `colorsweep-ui` | https://colorsweep-ui.hackathon.cozentus.com |
+| eternal_host_ui | `eternal-host-ui` | https://eternalhost.cozentus.com |
+| eternal_host_be | `eternal-host-be` | https://eternalhostapi.cozentus.com |
+| codesmash-frontend | `codesmash-frontend` | https://codesmash.cozentus.com |
+| codesmash-api | `codesmash-api` | https://codesmashapi.cozentus.com |
+| hack-ims-frontend | `hack-ims-frontend` | https://dotnetcommando.cozentus.com |
+| hack-ims-backend | `hack-ims-backend` | https://dotnetcommandoapi.cozentus.com |
+| bitstorm-ui | `bitstorm-ui` | https://bitstorm.cozentus.com |
+| bitstorm-api | `bitstorm-api` | https://bitstormapi.cozentus.com |
+| kinetix-api-service | `kinetix-api-service` | https://kinetixapi.cozentus.com |
+| kinetix-ui-service | `kinetix-ui-service` | https://kinetix.cozentus.com |
+| ai-mavericks-ui | `ai-mavericks-ui` | https://aimavericks.cozentus.com |
+| ai-mavericks-api | `ai-mavericks-api` | https://aimavericksapi.cozentus.com |
+| patronus-global-help-desk | `patronus-global-help-desk` | https://patronus.cozentus.com |
+| patronus-ai-support-investigator | `patronus-ai-support-investigator` | https://patronusapi.cozentus.com |
+| patronus-target-application | `patronus-target-application` | https://patronus-target.cozentus.com |
+| team-tesseract-backend | `team-tesseract-backend` | https://teamtesseractapi.cozentus.com |
+| team-tesseract-ui | `team-tesseract-ui` | https://teamtesseract.cozentus.com |
+| colorsweep-BE | `colorsweep-be` | https://colorsweepapi.cozentus.com |
+| colorsweep-UI | `colorsweep-ui` | https://colorsweep.cozentus.com |
 
 Until GoDaddy DNS is configured (DevOps handles this), your app is still reachable at the direct `*.run.app` URL shown in your deploy's Action log.
 
